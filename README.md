@@ -1,1 +1,4 @@
-# DECISION-TREE-CLASSIFIER IN C++ USING ENTROPY
+# Decision-Tree-Classifier
+Description <br>
+commiting 2
+commiting using visual code
