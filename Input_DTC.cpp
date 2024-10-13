@@ -57,7 +57,7 @@ public:
     }
 };
 
-void PrintData(vector<vector<string>> &table)
+void PrintData(vector<vector<string>> table)
 {
     for (int i = 0; i < table.size(); i++)
     {
