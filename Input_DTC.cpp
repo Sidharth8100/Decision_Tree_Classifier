@@ -3,6 +3,8 @@
 #include <fstream>
 #include <vector>
 #include <set>
+#include<map>
+#include<cmath>
 
 using namespace std;
 
@@ -27,10 +29,10 @@ public:
             table.resize(1000);
             while (reader.good())
             {
-                table[T_row].resize(6);
-                for (int i = 0; i < 6; ++i)
+                table[T_row].resize(7);
+                for (int i = 0; i < 7; ++i)
                 {
-                    getline(reader, table[T_row][i], (i < 5 ? ',' : '\n'));
+                    getline(reader, table[T_row][i], (i < 7 ? ',' : '\n'));
                 }
                 T_row++;
             }
@@ -55,6 +57,21 @@ public:
         return table;
     }
 };
+double CalculateEntropy(const vector<vector<string>>& data, int targetIndex) {
+    map<string, int> labelCounts;
+    for (const auto& row : data) {
+        labelCounts[row[targetIndex]]++;
+    }
+
+    double entropy = 0.0;
+    int total = data.size();
+    for (const auto& count : labelCounts) {
+        double probability = static_cast<double>(count.second) / total;
+        entropy -= probability * log2(probability);
+    }
+
+    return entropy;
+}
 
 void PrintData(const vector<vector<string>> &table)
 {
@@ -77,7 +94,7 @@ void CountUniqueAttributes(const vector<vector<string>> &table)  /////meaning it
     cout <<endl << "error " << endl ;
     for (int col = 0 ; col < 6 ; col++)
     {   
-        for (int row = 0 ; row < table[row].size() ; row++)
+        for (int row = 0 ; row < table.size() ; row++)
         {     //  cout << row << ' ' << table[row][col] << ':' << ' ';
 
             uniqueAttributes[col].insert(table[row][col]);
@@ -98,12 +115,13 @@ int main(int argc, const char *argv[])
     string f_name;
     cout << "Enter Your File Name" << endl;
     cin >> f_name;
-    
+
     Input train_file(f_name);
     cout << "get Row : " << train_file.GetRow() << endl;
     
     PrintData(train_file.GetTable());
     CountUniqueAttributes(train_file.GetTable());
-
+    double entropy = CalculateEntropy(train_file.GetTable() ,6);
+    cout << "BaseEntropy : " << entropy << endl ;
     return 0;
 }
