@@ -14,7 +14,25 @@ void PrintData(const vector<vector<string>> &table);
 void CountUniqueAttributes(const vector<vector<string>> &table);
 
 /////////////////////////////////////////////////////////////////////////////
+class Node {
+    int Index;
+    string feature_name ;
+    Node * left ;
+    Node * right ;
+    string result ;
+    public :
+    Node (int index , Node * left = nullptr , Node* right = nullptr )
+    {
+        Index = index ;
+        this->left = left ;
+        this->right = right ;
 
+    }
+};
+class DecisionTree
+{
+    Node * root = nullptr;
+};
 class Input
 {
     vector<vector<string>> table;
