@@ -12,6 +12,7 @@ using namespace std;
 // Function Declarations
 void PrintData(const vector<vector<string>> &table);
 void CountUniqueAttributes(const vector<vector<string>> &table);
+double getStatisticalError( double f, int N);
 
 /////////////////////////////////////////////////////////////////////////////
 class Node {
@@ -123,6 +124,18 @@ void CountUniqueAttributes(const vector<vector<string>> &table)  /////meaning it
     {
         cout << "Column " << col + 1 << " has " << uniqueAttributes[col].size() << " unique attributes." << endl;
     }
+}
+
+double getStatisticalError( double f, int N){
+// f -> frequency of incorrect classifications
+// N -> number of samples or instances in the node
+    double z= 1.96 //95% C.I.
+    if(N==0) {
+				cout << "Error Located in function for statistical error" << endl;
+                cout << "N is zero, ensure N is a valid number"<<endl;
+				exit(0);
+			}
+    return (f+z*z/(2*N)+z*sqrt(f/N-f*f/N+z*z/(4*N*N)))/(1+z*z/N);
 }
 
 int main(int argc, const char *argv[])
