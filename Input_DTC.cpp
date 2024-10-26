@@ -5,165 +5,217 @@
 #include <set>
 #include <map>
 #include <cmath>
+#include <limits>
+#include <sstream> // Include this header for stringstream
 
 using namespace std;
 
 ///////////////////////////////////////////////////////////////////////////
 // Function Declarations
-
-// Prints the entire dataset stored in a 2D vector (table)
-void PrintData(const vector<vector<string>> &table);
-
-// Counts unique attributes (unique values in each column) in the dataset
-void CountUniqueAttributes(const vector<vector<string>> &table);
-
-// Calculates statistical error using a specific formula (confidence level and sample count)
+void PrintData(const vector<vector<string>>& table);
+void CountUniqueAttributes(const vector<vector<string>>& table);
 double getStatisticalError(double f, int N);
+double CalculateEntropy(const vector<vector<string>>& data, int targetIndex);
+vector<vector<vector<string>>> SplitDataSet(const vector<vector<string>>& data, int featureIndex, const string& value);
+pair<string, double> FindBestSplit(const vector<vector<string>>& data, int featureIndex);
 
 /////////////////////////////////////////////////////////////////////////////
-// Node class for building tree nodes
-
 class Node {
-    int Index;             // Index of the feature used to split at this node
-    string feature_name;   // Name of the feature for splitting
-    Node* left;            // Pointer to the left child node
-    Node* right;           // Pointer to the right child node
-    string result;         // Stores result label if it is a leaf node
+    int Index; // Index of the feature being used for the split
+    string feature_name; // Name of the feature
+    Node* left; // Pointer to left child
+    Node* right; // Pointer to right child
+    string result; // Result if the node is a leaf
 
 public:
-    // Constructor for creating a node with index and optional left and right children
-    Node(int index, Node* left = nullptr, Node* right = nullptr) {
-        Index = index;
-        this->left = left;
-        this->right = right;
-    }
+    // Constructor for creating a node
+    Node(int index, Node* left = nullptr, Node* right = nullptr)
+        : Index(index), left(left), right(right) {} // Member initializer list
 };
-
-/////////////////////////////////////////////////////////////////////////////
-// DecisionTree class to manage the tree
 
 class DecisionTree {
-    Node* root = nullptr;  // Root node of the decision tree
+    Node* root = nullptr; // Root of the decision tree
 };
-
-/////////////////////////////////////////////////////////////////////////////
-// Input class to manage reading data from a file
 
 class Input {
-    vector<vector<string>> table; // Table to hold the dataset
-    int T_row = 0;                // Total number of rows read from the file
+    vector<vector<string>> table; // 2D vector to hold the dataset
+    int T_row = 0; // Counter for the number of rows in the dataset
 
 public:
-    // Constructor that reads the dataset from a given file
+    // Constructor to read data from a specified file
     Input(string f_name) {
-        ifstream reader(f_name);  // Open file for reading
-        if (reader.is_open()) {
-            table.resize(1000);   // Initial maximum size of 1000 rows
-            while (reader.good()) {
-                table[T_row].resize(7);  // Each row has 7 columns (attributes)
-                for (int i = 0; i < 7; ++i) {
-                    getline(reader, table[T_row][i], (i < 7 ? ',' : '\n'));  // Read each attribute
-                }
-                T_row++;  // Increment row counter
-            }
+        ifstream reader(f_name); // Open the file for reading
 
-            // Resize table to match the exact number of rows read
-            if (table.size() > T_row) {
-                table.erase(table.begin() + T_row, table.end());
-            }
-        } else {
-            cout << "File does not exist;" << endl;  // Error message if file not found
+        // Check if the file is successfully opened
+        if (!reader.is_open()) {
+            cout << "File does not exist;" << endl;
+            return; // Exit if the file cannot be opened
         }
-    }
-    
-    // Getter for the number of rows in the dataset
-    int GetRow() const {
-        return T_row;
+
+        string line; // Variable to hold each line of the CSV
+
+        // Read the file line by line
+        while (getline(reader, line)) {
+            vector<string> row; // Create a new row for each line
+            stringstream ss(line); // Use stringstream to parse the line
+            string value; // Variable to hold each value in the row
+
+            // Split the line by comma
+            while (getline(ss, value, ',')) {
+                row.push_back(value); // Add the parsed value to the row
+            }
+
+            // Only add the row if it has at least one value
+            if (!row.empty()) {
+                table.push_back(row); // Add the row to the table
+                T_row++; // Increment the row counter
+            }
+        }
+
+        // Close the reader after finishing
+        reader.close(); // Close the file
     }
 
-    // Getter for the dataset
+    // Function to get the total number of rows in the table
+    int GetRow() const {
+        return T_row; // Return the count of rows
+    }
+
+    // Function to get the table data
     vector<vector<string>> GetTable() const {
-        return table;
+        return table; // Return the 2D vector holding the data
     }
 };
 
-// Function to calculate the entropy of a dataset based on target labels
+// Calculate entropy of a dataset for a specific target index
 double CalculateEntropy(const vector<vector<string>>& data, int targetIndex) {
-    map<string, int> labelCounts;  // Map to count occurrences of each target label
+    map<string, int> labelCounts; // Map to hold counts of each label
     for (const auto& row : data) {
-        labelCounts[row[targetIndex]]++;
+        if (targetIndex < row.size()) { // Ensure targetIndex is within bounds
+            labelCounts[row[targetIndex]]++; // Count the occurrences of each label
+        }
     }
 
-    double entropy = 0.0;
-    int total = data.size();
+    double entropy = 0.0; // Variable to hold the calculated entropy
+    int total = data.size(); // Total number of rows in the dataset
     for (const auto& count : labelCounts) {
-        double probability = static_cast<double>(count.second) / total;  // Probability of each label
-        entropy -= probability * log2(probability);  // Entropy formula
+        double probability = static_cast<double>(count.second) / total; // Calculate probability
+        entropy -= probability * log2(probability); // Calculate entropy using the formula
     }
 
-    return entropy;
+    return entropy; // Return the calculated entropy
 }
 
-// Function to print the dataset
-void PrintData(const vector<vector<string>> &table) {
+// Split the dataset based on a feature and a given value
+vector<vector<vector<string>>> SplitDataSet(const vector<vector<string>>& data, int featureIndex, const string& value) {
+    vector<vector<string>> left, right; // Vectors to hold split datasets
+    for (const auto& row : data) {
+        if (featureIndex < row.size()) { // Check if featureIndex is within bounds
+            if (row[featureIndex] == value) {
+                left.push_back(row); // Add to left if it matches the value
+            } else {
+                right.push_back(row); // Add to right otherwise
+            }
+        }
+    }
+    return {left, right}; // Return both left and right subsets
+}
+
+// Find the best split point for a given feature by calculating entropy
+pair<string, double> FindBestSplit(const vector<vector<string>>& data, int featureIndex) {
+    set<string> uniqueValues; // Set to hold unique values for the feature
+    for (const auto& row : data) {
+        if (featureIndex < row.size()) { // Check if featureIndex is within bounds
+            uniqueValues.insert(row[featureIndex]); // Collect unique values for the feature
+        }
+    }
+
+    string bestValue; // Variable to hold the best value for the split
+    double bestEntropy = numeric_limits<double>::max(); // Initialize best entropy to maximum value
+
+    for (const auto& value : uniqueValues) {
+        auto subsets = SplitDataSet(data, featureIndex, value); // Split the data
+
+        double totalSize = data.size(); // Total size of the dataset
+        double leftSize = subsets[0].size(); // Size of the left subset
+        double rightSize = subsets[1].size(); // Size of the right subset
+
+        // Calculate weighted entropy for this split
+        double weightedEntropy = (leftSize / totalSize) * CalculateEntropy(subsets[0], data[0].size() - 1) +
+                                 (rightSize / totalSize) * CalculateEntropy(subsets[1], data[0].size() - 1);
+
+        // Check if this split is better
+        if (weightedEntropy < bestEntropy) {
+            bestEntropy = weightedEntropy; // Update best entropy
+            bestValue = value; // Update best value
+        }
+    }
+
+    return {bestValue, bestEntropy}; // Return the value and entropy of the best split
+}
+
+void PrintData(const vector<vector<string>>& table) {
     for (const auto& row : table) {
         for (const auto& elem : row) {
-            cout << elem << ',';
+            cout << elem << ','; // Print each element followed by a comma
         }
-        cout << endl;
+        cout << endl; // Print a new line after each row
     }
 }
 
-// Function to count unique attributes in each column of the dataset
-void CountUniqueAttributes(const vector<vector<string>> &table) {
-    if (table.empty()) return;  // If table is empty, nothing to count
+void CountUniqueAttributes(const vector<vector<string>>& table) {
+    if (table.empty()) return; // Return if the table is empty
 
-    // Create a set for each column to store unique values
-    vector<set<string>> uniqueAttributes(6);  // 6 columns, excluding the label column
-    cout << endl << "error " << endl ;
-    for (int col = 0; col < 6; col++) {
-        for (int row = 0; row < table.size(); row++) {
-            uniqueAttributes[col].insert(table[row][col]);  // Insert each value in the set
+    vector<set<string>> uniqueAttributes; // Vector of sets to hold unique attributes for each column
+    for (const auto& row : table) {
+        for (size_t col = 0; col < row.size(); ++col) {
+            if (col >= uniqueAttributes.size()) {
+                uniqueAttributes.resize(col + 1); // Resize to accommodate new column
+            }
+            uniqueAttributes[col].insert(row[col]); // Add unique attributes for each column
         }
     }
 
-    // Print unique attribute counts for each column
+    // Print unique counts for each column
     for (size_t col = 0; col < uniqueAttributes.size(); ++col) {
         cout << "Column " << col + 1 << " has " << uniqueAttributes[col].size() << " unique attributes." << endl;
     }
 }
 
-// Function to calculate statistical error based on confidence interval and sample size
 double getStatisticalError(double f, int N) {
-    double z = 1.96;  // z-score for 95% confidence interval
-
+    double z = 1.96; // 95% Confidence Interval
     if (N == 0) {
         cout << "Error Located in function for statistical error" << endl;
         cout << "N is zero, ensure N is a valid number" << endl;
-        exit(0);  // Exit if sample size is zero
+        exit(0); // Exit if N is zero
     }
-
-    // Statistical error formula
     return (f + z * z / (2 * N) + z * sqrt(f / N - f * f / N + z * z / (4 * N * N))) / (1 + z * z / N);
 }
 
-// Main function
 int main(int argc, const char* argv[]) {
-    cout << "argc value : " << argc << endl;        // Print the number of command-line arguments
-    cout << "argv[0] : " << argv[0] << endl;        // Print the program name
+    cout << "argc value: " << argc << endl; // Print argument count
+    cout << "argv[0]: " << argv[0] << endl; // Print program name
 
-    string f_name;
-    cout << "Enter Your File Name" << endl;
-    cin >> f_name;  // Take input file name from the user
+    string f_name; // Variable to hold the file name
+    cout << "Enter Your File Name" << endl; // Prompt user for file name
+    cin >> f_name; // Read file name from user input
 
-    Input train_file(f_name);  // Initialize Input object to read the file
-    cout << "get Row : " << train_file.GetRow() << endl;  // Print total rows in the file
-    
-    PrintData(train_file.GetTable());  // Print dataset content
-    CountUniqueAttributes(train_file.GetTable());  // Print unique attributes count for each column
-    double entropy = CalculateEntropy(train_file.GetTable(), 6);  // Calculate base entropy
-    cout << "BaseEntropy : " << entropy << endl;
+    Input train_file(f_name); // Create Input object to read the file
+    cout << "get Row: " << train_file.GetRow() << endl; // Print number of rows read
 
-    return 0;
+    PrintData(train_file.GetTable()); // Print the contents of the dataset
+    CountUniqueAttributes(train_file.GetTable()); // Count and print unique attributes
+
+    // Calculate the index of the last column as target index
+    int targetIndex = train_file.GetTable()[0].size() - 1; // Set target index to the last column
+    double entropy = CalculateEntropy(train_file.GetTable(), targetIndex); // Calculate entropy for the target column
+    cout << "BaseEntropy: " << entropy << endl; // Print the calculated entropy
+
+    // Example of finding the best split for a feature, say column 0
+    int featureIndex = 0; // Set feature index to the first column
+    auto bestSplit = FindBestSplit(train_file.GetTable(), featureIndex); // Find the best split
+    cout << "Best split value for feature " << featureIndex << " is: " << bestSplit.first 
+         << " with entropy: " << bestSplit.second << endl; // Print best split details
+
+    return 0; // Exit the program
 }
-
