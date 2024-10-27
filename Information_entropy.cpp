@@ -3,6 +3,7 @@
 #include <map>
 #include <string>
 #include <cmath>
+#include<bits/stdc++.h>
 
 
 using namespace std;
