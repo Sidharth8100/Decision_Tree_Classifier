@@ -42,7 +42,7 @@ void Information_Gain(const vector<vector<string>>& data) {
     }
     for(auto &itr :entrop)
     {
-        cout << entrop[itr]<< "^^^^" << endl;
+        cout <<entrop[itr]<< "^^^^"<< endl;
     }
     
     
@@ -77,16 +77,15 @@ int main() {
     double totalNo = overallCounts["No"];
     double total = totalYes + totalNo;
 
-    double overallEntropy = 0.0;
-    if (totalYes > 0) overallEntropy -= (totalYes / total) * log2(totalYes / total);
-    if (totalNo > 0) overallEntropy -= (totalNo / total) * log2(totalNo / total);
+   double overallEntropy = 0.0;
+    if (totalYes>0) overallEntropy -= (totalYes / total) * log2(totalYes / total);
+    if (totalNo>0) overallEntropy -=(totalNo / total) * log2(totalNo / total);
     cout << "Overall Entropy: " << overallEntropy << endl;
    
     // Output the overall results
-    cout << "Overall - Yes: " << overallCounts["Yes"] << ", No: " << overallCounts["No"] << endl;
+    cout <<"Overall - Yes: " << overallCounts["Yes"] << ", No: " << overallCounts["No"]<< endl;
 
     // Call the function to count Yes and No by weather condition
     Information_Gain(data);
-
     return 0;
 }
