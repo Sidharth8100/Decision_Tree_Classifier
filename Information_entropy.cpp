@@ -8,6 +8,17 @@
 using namespace std;
 
 // Function to calculate entropy
+// 
+
+#include <iostream>
+#include <vector>
+#include <map>
+#include <string>
+#include <cmath>
+
+using namespace std;
+
+// Function to calculate entropy
 double calculateEntropy(const map<string, int>& counts, int total) {
     double entropy = 0.0;
     for (const auto& count : counts) {
@@ -21,7 +32,6 @@ double calculateEntropy(const map<string, int>& counts, int total) {
 
 // Function to calculate information gain for each column
 vector<double> Information_Gain(const vector<vector<string>>& data, int targetIndex) {
-    // Map to store counts for overall "Play"
     map<string, int> overallCounts;
     int totalData = data.size() - 1; // Exclude header
 
@@ -33,14 +43,12 @@ vector<double> Information_Gain(const vector<vector<string>>& data, int targetIn
 
     // Calculate overall entropy
     double overallEntropy = calculateEntropy(overallCounts, totalData);
+    cout << "Overall Entropy: " << overallEntropy << endl;
 
-    // Vector to store information gain for each attribute
-    vector<double> informationGain(data[0].size() - 1); // Size excludes the target column
+    vector<double> informationGain(data[0].size() - 1, 0.0); // Size excludes the target column
 
     // Iterate over each attribute (excluding the target column)
-    for (size_t col = 0; col < data[0].size(); ++col) {
-        if (col == targetIndex) continue; // Skip the target column
-
+    for (size_t col = 0; col < data[0].size() - 1; ++col) {
         map<string, map<string, int>> conditionCounts;
 
         // Count Yes and No for each condition in the current attribute
@@ -54,51 +62,23 @@ vector<double> Information_Gain(const vector<vector<string>>& data, int targetIn
         double conditionalEntropy = 0.0;
 
         for (const auto& condition : conditionCounts) {
-            int yesCount = condition.second.count("Yes") ? condition.second.at("Yes") : 0;
-            int noCount = condition.second.count("No") ? condition.second.at("No") : 0;
-            double conditionTotal = yesCount + noCount;
+            int conditionTotal = 0;
+            for (const auto& count : condition.second) {
+                conditionTotal += count.second;
+            }
 
             if (conditionTotal > 0) {
-                conditionalEntropy += (conditionTotal / (data.size() - 1)) * calculateEntropy(condition.second, conditionTotal);
+                conditionalEntropy += (static_cast<double>(conditionTotal) / totalData) * 
+                                      calculateEntropy(condition.second, conditionTotal);
             }
         }
 
         // Information Gain = Overall Entropy - Conditional Entropy
-        informationGain[col < targetIndex ? col : col - 1] = overallEntropy - conditionalEntropy; // Adjust for skipped index
+        informationGain[col] = overallEntropy - conditionalEntropy;
+    //    cout << "Information Gain for column " << col << ": " << informationGain[col] << endl;
     }
 
     return informationGain;
 }
 
-int main() {
-    vector<vector<string>> data = {
-        {"Outlook", "Temperature", "Humidity", "Wind", "Play"},
-        {"Sunny", "Hot", "High", "Weak", "No"},
-        {"Sunny", "Hot", "High", "Strong", "No"},
-        {"Overcast", "Hot", "High", "Weak", "Yes"},
-        {"Rain", "Mild", "High", "Weak", "Yes"},
-        {"Rain", "Cool", "Normal", "Weak", "Yes"},
-        {"Rain", "Cool", "Normal", "Strong", "No"},
-        {"Overcast", "Cool", "Normal", "Strong", "Yes"},
-        {"Sunny", "Mild", "High", "Weak", "No"},
-        {"Sunny", "Cool", "Normal", "Weak", "Yes"},
-        {"Rain", "Mild", "Normal", "Weak", "Yes"},
-        {"Sunny", "Mild", "Normal", "Strong", "Yes"},
-        {"Overcast", "Mild", "High", "Strong", "Yes"},
-        {"Overcast", "Hot", "Normal", "Weak", "Yes"},
-        {"Rain", "Mild", "High", "Strong", "No"}
-    };
 
-    int targetIndex = 4; // Index of the target column ("Play")
-
-    // Call the function to calculate information gain
-    vector<double> gains = Information_Gain(data, targetIndex);
-
-    // Output the information gains
-    for (size_t i = 0; i < gains.size(); ++i) {
-        cout << "Information Gain for column " << (i < targetIndex ? i : i + 1) << ": " << gains[i] << endl;
-    }
-    cout << *max_element(gains.begin(), gains.end() );
-
-    return 0;
-}

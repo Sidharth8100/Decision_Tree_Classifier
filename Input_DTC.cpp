@@ -11,28 +11,11 @@ using namespace std;
 ///////////////////////////////////////////////////////////////////////////
 // Function Declarationsskdjfhasdkljfhbasdlkfk
 void PrintData(const vector<vector<string>> &table);
+
 void CountUniqueAttributes(const vector<vector<string>> &table);
 
 /////////////////////////////////////////////////////////////////////////////
-class Node {
-    int Index;
-    string feature_name ;
-    Node * left ;
-    Node * right ;
-    string result ;
-    public :
-    Node (int index , Node * left = nullptr , Node* right = nullptr )
-    {
-        Index = index ;
-        this->left = left ;
-        this->right = right ;
 
-    }
-};
-class DecisionTree
-{
-    Node * root = nullptr;
-};
 class Input
 {
     vector<vector<string>> table;
@@ -44,18 +27,19 @@ public:
         ifstream reader(f_name);
         if (reader.is_open())
         {
-            table.resize(1000);
+            table.resize(4000);
             while (reader.good())
             {
                 table[T_row].resize(7);
                 for (int i = 0; i < 7; ++i)
-                {
-                    getline(reader, table[T_row][i], (i < 7 ? ',' : '\n'));
+                {   
+                    getline(reader, table[T_row][i], (i < 6 ? ',' : '\n'));
+                
                 }
                 T_row++;
             }
             if (table.size() > T_row) 
-            {
+            {   
                 table.erase(table.begin() + T_row, table.end());
             }
         }
@@ -76,21 +60,6 @@ public:
     }
 };
 
-double CalculateEntropy(const vector<vector<string>>& data, int targetIndex) {
-    map<string, int> labelCounts;
-    for (const auto& row : data) {
-        labelCounts[row[targetIndex]]++;
-    }
-
-    double entropy = 0.0;
-    int total = data.size();
-    for (const auto& count : labelCounts) {
-        double probability = static_cast<double>(count.second) / total;
-        entropy -= probability * log2(probability);
-    }
-
-    return entropy;
-}
 
 void PrintData(const vector<vector<string>> &table)
 {
@@ -110,11 +79,11 @@ void CountUniqueAttributes(const vector<vector<string>> &table)  /////meaning it
 
     // Use a set for each column to track unique attributes
     vector<set<string>> uniqueAttributes(6);
-    cout <<endl << "error " << endl ;
+    
     for (int col = 0 ; col < 6 ; col++)
     {   
         for (int row = 0 ; row < table.size() ; row++)
-        {     //  cout << row << ' ' << table[row][col] << ':' << ' ';
+        {   
 
             uniqueAttributes[col].insert(table[row][col]);
         }
@@ -126,21 +95,4 @@ void CountUniqueAttributes(const vector<vector<string>> &table)  /////meaning it
     }
 }
 
-int main(int argc, const char *argv[])
-{
-    cout << "argc value : " << argc << endl;
-    cout << "argv[0] : " << argv[0] << endl;
 
-    string f_name;
-    cout << "Enter Your File Name" << endl;
-    cin >> f_name;
-
-    Input train_file(f_name);
-    cout << "get Row : " << train_file.GetRow() << endl;
-    
-    PrintData(train_file.GetTable());
-    CountUniqueAttributes(train_file.GetTable());
-    double entropy = CalculateEntropy(train_file.GetTable() ,6);
-    cout << "BaseEntropy : " << entropy << endl ;
-    return 0;
-}
