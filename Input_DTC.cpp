@@ -9,7 +9,7 @@
 using namespace std;
 
 ///////////////////////////////////////////////////////////////////////////
-// Function Declarations
+// Function Declarationsskdjfhasdkljfhbasdlkfk
 void PrintData(const vector<vector<string>> &table);
 void CountUniqueAttributes(const vector<vector<string>> &table);
 
@@ -75,6 +75,7 @@ public:
         return table;
     }
 };
+
 double CalculateEntropy(const vector<vector<string>>& data, int targetIndex) {
     map<string, int> labelCounts;
     for (const auto& row : data) {
