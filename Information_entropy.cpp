@@ -43,7 +43,7 @@ vector<double> Information_Gain(const vector<vector<string>>& data, int targetIn
 
     // Calculate overall entropy
     double overallEntropy = calculateEntropy(overallCounts, totalData);
-    cout << "Overall Entropy: " << overallEntropy << endl;
+                                     // cout << "Overall Entropy: " << overallEntropy << endl;
 
     vector<double> informationGain(data[0].size() - 1, 0.0); // Size excludes the target column
 
@@ -73,9 +73,9 @@ vector<double> Information_Gain(const vector<vector<string>>& data, int targetIn
             }
         }
 
-        // Information Gain = Overall Entropy - Conditional Entropy
+      
         informationGain[col] = overallEntropy - conditionalEntropy;
-    //    cout << "Information Gain for column " << col << ": " << informationGain[col] << endl;
+                           //    cout << "Information Gain for column " << col << ": " << informationGain[col] << endl;
     }
 
     return informationGain;
