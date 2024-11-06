@@ -3,13 +3,15 @@
 
 #include <vector>
 #include <string>
+#include <iostream>
 
+using namespace std;
 
 struct Node {
     int attributeIndex;
     Node* left;
     Node* right;
-    std::string decision;
+    string decision;
 
     Node(int index)
         : attributeIndex(index),
@@ -20,14 +22,12 @@ struct Node {
     }
 };
 
-std::string predict(Node* node, 
-                    const std::vector<std::string>& row, 
-                    const std::vector<std::string>& headers) 
+string predict(Node* node, const vector<string>& row, const vector<string>& headers) 
 {
     while (node->decision == "") 
     {
         int attributeIdx = node->attributeIndex;
-        std::string attributeValue = row[attributeIdx];
+        string attributeValue = row[attributeIdx];
 
         if (node->left) 
         {
@@ -48,10 +48,44 @@ std::string predict(Node* node,
         }
     }
     
-    std::string finalDecision;
+    string finalDecision;
     finalDecision = node->decision;
     
     return finalDecision;
+}
+
+bool verifyPrediction(Node* root, const vector<vector<string>>& table, int targetIndex) 
+{
+    bool allMatched = true;
+
+    for (size_t rowIdx = 1; rowIdx < table.size(); ++rowIdx) 
+    {
+        const vector<string>& row = table[rowIdx];
+        string actualValue = row[targetIndex];
+        string predictedValue = predict(root, row, table[0]);
+
+        if (predictedValue == actualValue) 
+        {
+            cout << "Row " << rowIdx << " - Match: ";
+            for (const string& element : row) 
+            {
+                cout << element << " ";
+            }
+            cout << endl;
+        } 
+        else 
+        {
+            allMatched = false;
+            cout << "Row " << rowIdx << " - Mismatch: ";
+            for (const string& element : row) 
+            {
+                cout << element << " ";
+            }
+            cout << endl;
+        }
+    }
+
+    return allMatched;
 }
 
 #endif 
