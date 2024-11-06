@@ -117,13 +117,16 @@ class MatrixCls
       return Values;
     }
 
-    vector < string > GetUniqueAttributeValues(string The_Attribute)
-    {
-      vector < string > Values = GetAttributeValues(The_Attribute);
-      sort(Values.begin(), Values.end());
-    	Values.erase(unique(Values.begin(), Values.end()), Values.end());
-      return Values;
-    }
+vector<string> GetUniqueAttributeValues(string The_Attribute) 
+{ 
+  vector<string> Values = GetAttributeValues(The_Attribute);  // Retrieve attribute values
+    sort(Values.begin(), Values.end()); 
+  // Remove duplicate values
+  Values.erase(unique(Values.begin(), Values.end()), Values.end()); 
+  
+  return Values;  // Return the unique values
+} 
+
 
     map < string, vector < string > > GetAttributeValuesScores(string The_Attribute)
     {
@@ -147,88 +150,106 @@ class MatrixCls
       return Attribute_Values_Scores;
     }
 
-    vector < string > SortAttributeValues(string The_Attribute)
-    {
-      vector < string > Values = GetAttributeValues(The_Attribute);
-      string Temp;
-      for(int i = 0; i < Values.size()-1; i++)
-      {
-        for(int j = i+1; j < Values.size(); j++)
-        {
-          if(stod(Values[i]) - stod(Values[j]) > 1.e-8)
-          {
-            Temp = Values[i];
-            Values[i] = Values[j];
-            Values[j] = Temp;
-          }
-        }
-      }
-      return Values;
+    vector<string> SortAttributeValues(string The_Attribute) 
+{ 
+  vector<string> Values = GetAttributeValues(The_Attribute);  // Retrieve attribute values
+  string Temp;
+
+  // Sort the values in ascending order
+  for(int i = 0; i < Values.size()-1; i++) 
+  { 
+    for(int j = i+1; j < Values.size(); j++) 
+    { 
+      // Swap values if they are out of order
+      if(stod(Values[i]) - stod(Values[j]) > 1.e-8) 
+      { 
+        Temp = Values[i]; 
+        Values[i] = Values[j]; 
+        Values[j] = Temp; 
+      } 
+    } 
+  } 
+
+  return Values;  // Return the sorted values
+} 
+
+
+  vector<string> SortScoreValues(string The_Attribute) 
+{ 
+  vector<string> Values = GetAttributeValues(The_Attribute);  // Retrieve attribute values
+  vector<string> Scores = GetScores();  // Retrieve associated scores
+  string Temp;
+
+  // Sort both values and scores in ascending order based on values
+  for(int i = 0; i < Values.size()-1; i++) 
+  { 
+    for(int j = i+1; j < Values.size(); j++) 
+    { 
+      // Swap values and scores if they are out of order
+      if(stod(Values[i]) - stod(Values[j]) > 1.e-8) 
+      { 
+        Temp = Values[i]; 
+        Values[i] = Values[j]; 
+        Values[j] = Temp;
+
+        Temp = Scores[i]; 
+        Scores[i] = Scores[j]; 
+        Scores[j] = Temp; 
+      } 
+    } 
+  } 
+  
+  return Scores;  // Return the sorted scores
+} 
+
+
+    vector<string> GetBisectNodes(string The_Attribute) 
+{ 
+  vector<string> Bisect_Nodes; 
+  vector<string> SortedValues = SortAttributeValues(The_Attribute); 
+  vector<string> SortedScores = SortScoreValues(The_Attribute); 
+  for(int i = 0; i < SortedValues.size()-1; i++) 
+  { 
+    if(abs(stod(SortedValues[i]) - stod(SortedValues[i+1])) > 1.e-8 & SortedScores[i].compare(SortedScores[i+1]) != 0) 
+    { 
+      Bisect_Nodes.push_back(to_string((stod(SortedValues[i]) + stod(SortedValues[i+1]))/2.)); 
+    } 
+  } 
+  return Bisect_Nodes; 
+} 
+
+
+   map<string, vector<string>> GetAttributeBisectParts(string The_Attribute, string Bisect_Node) 
+{ 
+  map<string, vector<string>> Bisect_Parts;  // Initialize map to store bisected parts
+  vector<string> SortedValues = SortAttributeValues(The_Attribute); 
+  vector<string> SortedScores = SortScoreValues(The_Attribute); 
+  vector<string> Row_1, Row_2, Row_3, Row_4; 
+  
+  for(int i = 0; i < SortedValues.size(); i++) 
+  { 
+    // Check if current value is less than the bisect node
+    if(stod(SortedValues[i]) - stod(Bisect_Node) < -1.e-8) 
+    { 
+      Row_1.push_back(SortedScores[i]);  // Add to lower scores
+      Row_3.push_back(SortedValues[i]);  // Add to lower values
     }
+    else
+    { 
+      Row_2.push_back(SortedScores[i]);  // Add to upper scores
+      Row_4.push_back(SortedValues[i]);  // Add to upper values
+    } 
+  } 
+  
+  // Populate the map with categorized vectors
+  Bisect_Parts["Lower_Scores"] = Row_1; 
+  Bisect_Parts["Upper_Scores"] = Row_2; 
+  Bisect_Parts["Lower_Values"] = Row_3; 
+  Bisect_Parts["Upper_Values"] = Row_4; 
 
-    vector < string > SortScoreValues(string The_Attribute)
-    {
-      vector < string > Values = GetAttributeValues(The_Attribute);
-      vector < string > Scores = GetScores();
-      string Temp;
+  return Bisect_Parts; 
+} 
 
-      for(int i = 0; i < Values.size()-1; i++)
-      {
-        for(int j = i+1; j < Values.size(); j++)
-        {
-          if(stod(Values[i]) - stod(Values[j]) > 1.e-8)
-          {
-            Temp = Values[i];
-            Values[i] = Values[j];
-            Values[j] = Temp;
-
-            Temp = Scores[i];
-            Scores[i] = Scores[j];
-            Scores[j] = Temp;
-          }
-        }
-      }
-      return Scores;
-    }
-
-    vector < string > GetBisectNodes(string The_Attribute)
-    {
-      vector < string > Bisect_Nodes;
-      vector < string > SortedValues = SortAttributeValues(The_Attribute);
-      vector < string > SortedScores = SortScoreValues(The_Attribute);
-      for(int i = 0; i < SortedValues.size()-1; i++)
-      {
-        if(abs(stod(SortedValues[i]) - stod(SortedValues[i+1])) > 1.e-8 & SortedScores[i].compare(SortedScores[i+1]) != 0)
-        {
-          Bisect_Nodes.push_back(to_string((stod(SortedValues[i]) + stod(SortedValues[i+1]))/2.));
-        }
-      }
-      return Bisect_Nodes;
-    }
-
-    map < string, vector < string > > GetAttributeBisectParts(string The_Attribute, string Bisect_Node)
-    {
-      map < string, vector < string > > Bisect_Parts;
-      vector < string > SortedValues = SortAttributeValues(The_Attribute);
-      vector < string > SortedScores = SortScoreValues(The_Attribute);
-      vector < string > Row_1, Row_2, Row_3, Row_4;
-      for(int i = 0; i < SortedValues.size(); i++)
-      {
-        if(stod(SortedValues[i]) - stod(Bisect_Node) < -1.e-8)
-        {
-          Row_1.push_back(SortedScores[i]);
-          Row_3.push_back(SortedValues[i]);
-        }else{
-          Row_2.push_back(SortedScores[i]);
-          Row_4.push_back(SortedValues[i]);
-        }
-      }
-      Bisect_Parts["Lower_Scores"] = Row_1;
-      Bisect_Parts["Upper_Scores"] = Row_2;
-      Bisect_Parts["Lower_Values"] = Row_3;
-      Bisect_Parts["Upper_Values"] = Row_4;
-      return Bisect_Parts;
-    }
 
     MatrixCls operator()(MatrixCls A_Matrix, string The_Attribute, string The_Value, string Bisect_Node = "")
     {
@@ -727,4 +748,4 @@ int main()
   DisplayVector(Test_Scores);
   vector < string > Test_String = {"a","b","c","d"};
   DisplayVector(Test_String);
-  
+} 
