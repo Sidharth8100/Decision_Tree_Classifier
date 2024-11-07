@@ -25,100 +25,124 @@ struct Node {
 };
 
 // Function to create a leaf node
-Node* createLeafNode(const vector<vector<string>>& data, int targetIndex) {
-    map<string, int> counts;
-    for (size_t i = 1; i < data.size(); ++i) { // Exclude header
-        counts[data[i][targetIndex]]++;
-    }
+Node* createLeafNode(const vector<vector<string>>& data, int targetIndex) 
+{ 
+  map<string, int> counts;  // Map to count occurrences of each class
+  
+  // Count the occurrences of each class in the target column, excluding header
+  for (size_t i = 1; i < data.size(); ++i) 
+  { 
+    counts[data[i][targetIndex]]++; 
+  } 
 
-    // Find the class with the maximum count
-    string maxClass;
-    int maxCount = 0;
-    for (const auto& count : counts) {
-        if (count.second > maxCount) {
-            maxCount = count.second;
-            maxClass = count.first;
-        }
-    }
+  // Find the class with the maximum count
+  string maxClass; 
+  int maxCount = 0; 
+  for (const auto& count : counts) 
+  { 
+    if (count.second > maxCount) 
+    { 
+      maxCount = count.second; 
+      maxClass = count.first; 
+    } 
+  } 
 
-    Node* leaf = new Node(-1); // -1 indicates a leaf node
-    leaf->decision = maxClass;
-    return leaf;
-}
+  Node* leaf = new Node(-1);  // -1 indicates a leaf node
+  leaf->decision = maxClass;  // Assign the decision (class with max count)
+  
+  return leaf; 
+} 
+
 
 // Function to build the decision tree
-Node* buildTree(const vector<vector<string>>& data, int targetIndex) {
-    // Base case: Check stopping criteria (e.g., pure subset or no data)
-    if (data.size() <= 1) { // Only header or no data
-        return createLeafNode(data, targetIndex);
-    }
+Node* buildTree(const vector<vector<string>>& data, int targetIndex) 
+{ 
+  // Base case: Check stopping criteria (e.g., pure subset or no data)
+  if (data.size() <= 1) 
+  { 
+    return createLeafNode(data, targetIndex); 
+  } 
 
-    map<string, int> overallCounts;
-    for (size_t i = 1; i < data.size(); ++i) {
-        overallCounts[data[i][targetIndex]]++;
-    }
+  map<string, int> overallCounts;  // Count occurrences of each class in target column
+  for (size_t i = 1; i < data.size(); ++i) 
+  { 
+    overallCounts[data[i][targetIndex]]++; 
+  } 
 
-    // If all instances belong to one class, create a leaf node
-    if (overallCounts.size() == 1) {
-        return createLeafNode(data, targetIndex);
-    }
+  // If all instances belong to one class, create a leaf node
+  if (overallCounts.size() == 1) 
+  { 
+    return createLeafNode(data, targetIndex); 
+  } 
 
-    // Step 1: Calculate information gain for each attribute
-    vector<double> gains = Information_Gain(data, targetIndex);
+  // Step 1: Calculate information gain for each attribute
+  vector<double> gains = Information_Gain(data, targetIndex); 
 
-    // Step 2: Find attribute with the highest gain
-    int bestAttributeIndex = -1;
-    double maxGain = -1;
-    for (size_t col = 0; col < gains.size(); ++col) {
-        if (gains[col] > maxGain) {
-            maxGain = gains[col];
-            bestAttributeIndex = col;
-        }
-    }
+  // Step 2: Find attribute with the highest gain
+  int bestAttributeIndex = -1; 
+  double maxGain = -1; 
+  for (size_t col = 0; col < gains.size(); ++col) 
+  { 
+    if (gains[col] > maxGain) 
+    { 
+      maxGain = gains[col]; 
+      bestAttributeIndex = col; 
+    } 
+  } 
 
-    // Step 3: Split data into subsets based on best attribute
-    map<string, vector<vector<string>>> subsets;
-    for (size_t i = 1; i < data.size(); ++i) {
-        string attributeValue = data[i][bestAttributeIndex];
-        subsets[attributeValue].push_back(data[i]);
-    }
+  // Step 3: Split data into subsets based on best attribute
+  map<string, vector<vector<string>>> subsets; 
+  for (size_t i = 1; i < data.size(); ++i) 
+  { 
+    string attributeValue = data[i][bestAttributeIndex]; 
+    subsets[attributeValue].push_back(data[i]); 
+  } 
 
-    // Step 4: Create node
-    Node* node = new Node(bestAttributeIndex);
+  // Step 4: Create a node for the best attribute
+  Node* node = new Node(bestAttributeIndex); 
 
-    // Step 5: Recursively build children for each subset
-    for (const auto& pair : subsets) {
-        const string& value = pair.first;
-        const vector<vector<string>>& subsetData = pair.second;
+  // Step 5: Recursively build children for each subset
+  for (const auto& pair : subsets) 
+  { 
+    const string& value = pair.first; 
+    const vector<vector<string>>& subsetData = pair.second; 
 
-        Node* childNode = buildTree(subsetData, targetIndex);
-        
-        // Assign child nodes based on the attribute value
-        if (node->left == nullptr) {
-            node->left = childNode; // First subset becomes left child
-        } else {
-            node->right = childNode; // Second subset becomes right child
-        }
-    }
+    Node* childNode = buildTree(subsetData, targetIndex); 
+    
+    // Assign child nodes based on the attribute value
+    if (node->left == nullptr) 
+    { 
+      node->left = childNode;  // First subset becomes left child
+    } 
+    else 
+    { 
+      node->right = childNode;  // Second subset becomes right child
+    } 
+  } 
 
-    return node;
-}
+  return node;  // Return the root node of the subtree
+} 
 
 // Function to print the decision tree
-void printTree(Node* node, const vector<string>& headers, int level = 0) {
-    if (node == nullptr) return;
+void printTree(Node* node, const vector<string>& headers, int level = 0) 
+{ 
+  if (node == nullptr) return;  // Base case: if node is null, return
 
-    // Print the current node
-    if (node->decision != "") {
-        cout << setw(level * 4) << "" << "Decision: " << node->decision << endl;
-    } else {
-        cout << setw(level * 4) << "" << "Attribute: " << headers[node->attributeIndex] << endl;
-        cout << setw(level * 4) << "" << "Left ->" << endl;
-        printTree(node->left, headers, level + 1);
-        cout << setw(level * 4) << "" << "Right ->" << endl;
-        printTree(node->right, headers, level + 1);
-    }
-}
+  // Print the current node's information
+  if (node->decision != "") 
+  { 
+    cout << setw(level * 4) << "" << "Decision: " << node->decision << endl;  // Leaf node decision
+  } 
+  else 
+  { 
+    cout << setw(level * 4) << "" << "Attribute: " << headers[node->attributeIndex] << endl;  // Print attribute name
+    cout << setw(level * 4) << "" << "Left ->" << endl;  
+    printTree(node->left, headers, level + 1);    // Recursive call for left child
+    cout << setw(level * 4) << "" << "Right ->" << endl; 
+    printTree(node->right, headers, level + 1);  // Recursive call for right child
+  } 
+} 
+
 
 // Example usage
 int main() {
