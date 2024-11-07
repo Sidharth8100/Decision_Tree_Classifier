@@ -1,0 +1,29 @@
+Step 1: Review and Setup the Project Files
+Data Loader/Preprocessing Script: A script for loading and preprocessing the "Car Evaluation" dataset. This will be used for both training and testing purposes.
+Model Script: This script will include the main Decision Tree implementation, which should use entropy-based splitting.
+Evaluation Script: A script for evaluating and comparing results, with and without pruning.
+Main Script/Notebook: A script or notebook to run everything and display results, making it easy to see the difference in accuracy and visualization.
+Step 2: Implementing and Modifying Each File
+Data Loading and Preprocessing:
+
+Load the "Car Evaluation" dataset from Kaggle, either as a CSV or through an API.
+Ensure categorical features are properly encoded, as the Decision Tree will need numerical or encoded categorical data.
+Model Script (decision_tree_classifier.py or equivalent):
+
+Decision Tree Classifier Implementation:
+If you're implementing from scratch, add functions for entropy calculation, recursive tree growth based on entropy-based node splitting, and handling stopping conditions for depth, minimum samples per leaf, or maximum features.
+For splitting, calculate entropy at each potential split and choose the split that minimizes the weighted entropy of the resulting child nodes.
+Pruning Mechanism: Implement pruning, which can be either post-pruning (removing subtrees that don’t improve accuracy) or pre-pruning (limiting tree depth or minimum samples per split). This will be useful for comparing performance with and without pruning.
+Training and Testing with Pruning:
+
+Set up functions to train the classifier both with and without pruning.
+For each training session, store the resulting model and evaluation metrics.
+Evaluation Script (evaluate.py or equivalent):
+
+Use the trained models to predict on a validation or test set.
+Measure and compare accuracy, precision, recall, and F1-score for both the pruned and unpruned trees.
+Main Script/Notebook (main.py or decision_tree_classifier.ipynb):
+
+Import and call functions for each component.
+Plot and display the Decision Tree structures if possible (e.g., using graphviz).
+Show final performance metrics for comparison and draw conclusions on the effect of pruning.
