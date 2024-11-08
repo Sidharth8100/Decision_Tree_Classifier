@@ -752,12 +752,36 @@ void DisplayVector(vector < string > The_Vector)
 
 int main()
 {
-  MatrixCls Matrix("Golf.dat");
-  TreeCls * Tree;
-  Tree = Tree->BuildTree(Tree, Matrix);
-  Tree->Display();
-  vector < string > Test_Scores = Tree->TestTree(Matrix);
-  DisplayVector(Test_Scores);
-  vector < string > Test_String = {"a","b","c","d"};
-  DisplayVector(Test_String);
-} 
+    // Load the dataset
+    MatrixCls Matrix("Golf.dat");
+    
+    // Build the decision tree
+    TreeCls * Tree;
+    Tree = Tree->BuildTree(Tree, Matrix);
+    Tree->Display();  // Display the tree
+    
+    // Test the tree with the same dataset (this can be changed to use a separate test set)
+    vector < string > Test_Scores = Tree->TestTree(Matrix);
+    
+    // Get the actual scores (the correct labels) from the matrix
+    vector<string> Actual_Scores = Matrix.GetScores();
+    
+    // Calculate accuracy by comparing predicted scores to actual scores
+    int correct_predictions = 0;
+    int total_predictions = Test_Scores.size();
+    
+    for (int i = 0; i < total_predictions; i++) {
+        if (Test_Scores[i] == Actual_Scores[i]) {
+            correct_predictions++;
+        }
+    }
+    
+    // Calculate and display the accuracy
+    double accuracy = (double) correct_predictions / total_predictions * 100;
+    cout << "Accuracy: " << accuracy << "%" << endl;
+    
+    // Optionally, display the predicted values
+    DisplayVector(Test_Scores);
+    
+    return 0;
+}
