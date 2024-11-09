@@ -30,7 +30,7 @@ Node* createLeafNode(const vector<vector<string>>& data, int targetIndex) {
     for (size_t i = 1; i < data.size(); ++i) { // Exclude header
         counts[data[i][targetIndex]]++;
     }
-
+    
     // Find the class with the maximum count
     string maxClass;
     int maxCount = 0;
@@ -40,7 +40,7 @@ Node* createLeafNode(const vector<vector<string>>& data, int targetIndex) {
             maxClass = count.first;
         }
     }
-
+    
     Node* leaf = new Node(-1); // -1 indicates a leaf node
     leaf->decision = maxClass;
     return leaf;
@@ -52,20 +52,20 @@ Node* buildTree(const vector<vector<string>>& data, int targetIndex) {
     if (data.size() <= 1) { // Only header or no data
         return createLeafNode(data, targetIndex);
     }
-
+    
     map<string, int> overallCounts;
     for (size_t i = 1; i < data.size(); ++i) {
         overallCounts[data[i][targetIndex]]++;
     }
-
+    
     // If all instances belong to one class, create a leaf node
     if (overallCounts.size() == 1) {
         return createLeafNode(data, targetIndex);
     }
-
+    
     // Step 1: Calculate information gain for each attribute
     vector<double> gains = Information_Gain(data, targetIndex);
-
+    
     // Step 2: Find attribute with the highest gain
     int bestAttributeIndex = -1;
     double maxGain = -1;
@@ -75,22 +75,22 @@ Node* buildTree(const vector<vector<string>>& data, int targetIndex) {
             bestAttributeIndex = col;
         }
     }
-
+    
     // Step 3: Split data into subsets based on best attribute
     map<string, vector<vector<string>>> subsets;
     for (size_t i = 1; i < data.size(); ++i) {
         string attributeValue = data[i][bestAttributeIndex];
         subsets[attributeValue].push_back(data[i]);
     }
-
+    
     // Step 4: Create node
     Node* node = new Node(bestAttributeIndex);
-
+    
     // Step 5: Recursively build children for each subset
     for (const auto& pair : subsets) {
         const string& value = pair.first;
         const vector<vector<string>>& subsetData = pair.second;
-
+        
         Node* childNode = buildTree(subsetData, targetIndex);
         
         // Assign child nodes based on the attribute value
@@ -100,14 +100,14 @@ Node* buildTree(const vector<vector<string>>& data, int targetIndex) {
             node->right = childNode; // Second subset becomes right child
         }
     }
-
+  
     return node;
 }
 
 // Function to print the decision tree
 void printTree(Node* node, const vector<string>& headers, int level = 0) {
     if (node == nullptr) return;
-
+    
     // Print the current node
     if (node->decision != "") {
         cout << setw(level * 4) << "" << "Decision: " << node->decision << endl;

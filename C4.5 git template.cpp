@@ -5,150 +5,130 @@
 #include <vector>
 #include <map>
 #include <algorithm>
+#include <cmath>
 using namespace std;
 
 class MatrixCls
 {
   private:
-    vector < vector < string > > Matrix;
+    vector<vector<string>> Matrix;
+
   public:
-    MatrixCls(string Data_File)
-    {
-      Matrix.erase(Matrix.begin(),Matrix.end());
-      ifstream Data(Data_File);
-      string Line;
-      string Item;
-      vector < string > Row;
-      while(!Data.eof())
-    	{
-    		getline(Data, Line);
-    		istringstream Iss(Line);
-        while(Iss.good())
-        {
-          getline(Iss, Item, ',');
-          Item.erase(remove(Item.begin(), Item.begin()+2, ' '), Item.begin()+2);
-          Item.erase(remove(Item.end()-1, Item.end(), ' '), Item.end());
-          Row.push_back(Item);
-        }
+    MatrixCls::MatrixCls(string Data_File) 
+{
+  Matrix.clear();
+  ifstream Data(Data_File);
+  string Line, Item;
+  vector<string> Row;
 
-    		if(Line.length())
-    		{
-    			Matrix.push_back(Row);
-    			Row.erase(Row.begin(),Row.end());
-    		}
-    	}
-      Data.close();
+  while (getline(Data, Line)) 
+  {
+    istringstream Iss(Line);
+    while (getline(Iss, Item, ',')) 
+    {
+      // Removing leading and trailing whitespaces
+      Item.erase(0, Item.find_first_not_of(" "));
+      Item.erase(Item.find_last_not_of(" ") + 1);
+      Row.push_back(Item);
     }
-
-    MatrixCls(){ };
-    ~MatrixCls(){ };
-
-    string Element(int i,int j)
+    if (!Row.empty()) 
     {
-      return Matrix[i][j];
+      Matrix.push_back(Row);
+      Row.clear();
     }
+  }
+  Data.close();
+}
 
-    int SizeX()
-    {
-      return Matrix[0].size();
-    }
+    string Element(int i, int j) { return Matrix[i][j]; }
 
-    int SizeY()
-    {
-      return Matrix.size();
-    }
+    int SizeX() { return Matrix[0].size(); }
 
-    vector < string > GetVarKinds()
+    int SizeY() { return Matrix.size(); }
+
+    vector<string> GetVarKinds()
     {
-      vector < string > Kinds;
-      int j;
-      for(j = 0; j < SizeX()-1; j++)
+      vector<string> Kinds;
+      for (int j = 0; j < SizeX() - 1; j++)
       {
-          Kinds.push_back(Matrix[0][j]);
+        Kinds.push_back(Matrix[0][j]);
       }
       return Kinds;
     }
 
-    vector < string > GetAttributes()
+    vector<string> GetAttributes()
     {
-      vector < string > Attributes;
-      int j;
-      for(j = 0; j < SizeX()-1; j++)
+      vector<string> Attributes;
+      for (int j = 0; j < SizeX() - 1; j++)
       {
-          Attributes.push_back(Matrix[1][j]);
+        Attributes.push_back(Matrix[1][j]);
       }
       return Attributes;
     }
 
-    vector < string > GetScores()
+    vector<string> GetScores()
     {
-      vector < string > Scores;
-      for(int i = 2; i < SizeY(); i++)
+      vector<string> Scores;
+      for (int i = 2; i < SizeY(); i++)
       {
-        Scores.push_back(Matrix[i][SizeX()-1]);
+        Scores.push_back(Matrix[i][SizeX() - 1]);
       }
       return Scores;
     }
 
     int GetAttributeIndex(string The_Attribute)
     {
+      for (int j = 0; j < SizeX(); j++)
       {
-        int Index = 0;
-        for(int j = 0; j < SizeX(); j++)
+        if (Matrix[1][j] == The_Attribute)
         {
-          if(Matrix[1][j].compare(The_Attribute) == 0)
-          {
-            Index = j;
-            break;
-          }
+          return j;
         }
-        return Index;
       }
+      return -1; // If attribute not found
     }
 
-    vector < string > GetAttributeValues(string The_Attribute)
+    vector<string> GetAttributeValues(string The_Attribute)
     {
-      vector < string > Values;
+      vector<string> Values;
       int Index = GetAttributeIndex(The_Attribute);
-      for(int i = 2; i < SizeY(); i++)
+      for (int i = 2; i < SizeY(); i++)
       {
         Values.push_back(Matrix[i][Index]);
       }
       return Values;
     }
 
-vector<string> GetUniqueAttributeValues(string The_Attribute) 
-{ 
-  vector<string> Values = GetAttributeValues(The_Attribute);  // Retrieve attribute values
-    sort(Values.begin(), Values.end()); 
-  // Remove duplicate values
-  Values.erase(unique(Values.begin(), Values.end()), Values.end()); 
-  
-  return Values;  // Return the unique values
-} 
-
-
-    map < string, vector < string > > GetAttributeValuesScores(string The_Attribute)
+    vector<string> GetUniqueAttributeValues(string The_Attribute)
     {
-      int i,k;
+      vector<string> Values = GetAttributeValues(The_Attribute);
+      sort(Values.begin(), Values.end());
+      Values.erase(unique(Values.begin(), Values.end()), Values.end());
+      return Values;
+    }
+
+    map<string, vector<string>> GetAttributeValuesScores(string The_Attribute)
+    {
       int Index = GetAttributeIndex(The_Attribute);
-      map < string, vector < string > > Attribute_Values_Scores;
-      vector < string > Attribute_Values = GetUniqueAttributeValues(The_Attribute);
-      vector < string > Row;
-      for(k = 0; k < Attribute_Values.size(); k++)
+      map<string, vector<string>> Attribute_Values_Scores;
+      vector<string> Attribute_Values = GetUniqueAttributeValues(The_Attribute);
+      vector<string> Row;
+
+      for (const string &val : Attribute_Values)
       {
-        for(i = 2; i < SizeY(); i++)
+        for (int i = 2; i < SizeY(); i++)
         {
-          if(Matrix[i][Index].compare(Attribute_Values[k]) == 0)
+          if (Matrix[i][Index] == val)
           {
-            Row.push_back(Matrix[i][SizeX()-1]);
+            Row.push_back(Matrix[i][SizeX() - 1]);
           }
         }
-        Attribute_Values_Scores[Attribute_Values[k]] = Row;
-        Row.erase(Row.begin(),Row.end());
+        Attribute_Values_Scores[val] = Row;
+        Row.clear();
       }
       return Attribute_Values_Scores;
     }
+
 
     vector<string> SortAttributeValues(string The_Attribute) 
 { 
@@ -172,36 +152,29 @@ vector<string> GetUniqueAttributeValues(string The_Attribute)
 
   return Values;  // Return the sorted values
 } 
+vector<string> SortScoreValues(string The_Attribute) {
+        vector<string> Values = GetAttributeValues(The_Attribute);  // Retrieve attribute values
+        vector<string> Scores = GetScores();  // Retrieve associated scores
+        vector<pair<double, string>> ValueScorePairs;
+
+        for (size_t i = 0; i < Values.size(); ++i) {
+            ValueScorePairs.emplace_back(stod(Values[i]), Scores[i]);
+        }
+
+        sort(ValueScorePairs.begin(), ValueScorePairs.end());
+
+        // Extract sorted scores based on sorted values
+        vector<string> SortedScores;
+        for (const auto& pair : ValueScorePairs) {
+            SortedScores.push_back(pair.second);
+        }
+
+        return SortedScores;  // Return the sorted scores
+    }
 
 
-  vector<string> SortScoreValues(string The_Attribute) 
-{ 
-  vector<string> Values = GetAttributeValues(The_Attribute);  // Retrieve attribute values
-  vector<string> Scores = GetScores();  // Retrieve associated scores
-  string Temp;
-
-  // Sort both values and scores in ascending order based on values
-  for(int i = 0; i < Values.size()-1; i++) 
-  { 
-    for(int j = i+1; j < Values.size(); j++) 
-    { 
-      // Swap values and scores if they are out of order
-      if(stod(Values[i]) - stod(Values[j]) > 1.e-8) 
-      { 
-        Temp = Values[i]; 
-        Values[i] = Values[j]; 
-        Values[j] = Temp;
-
-        Temp = Scores[i]; 
-        Scores[i] = Scores[j]; 
-        Scores[j] = Temp; 
-      } 
-    } 
-  } 
   
-  return Scores;  // Return the sorted scores
-} 
-
+ 
 
     vector<string> GetBisectNodes(string The_Attribute) 
 { 
@@ -352,20 +325,16 @@ vector<string> GetUniqueAttributeValues(string The_Attribute)
         return *this;
       }
     }
-
-    void Display()
-    {
-      int i, j;
-      for(i = 0; i < Matrix.size(); i++)
-      {
-        for(j = 0; j < Matrix[0].size(); j++)
-        {
-            cout  << Matrix[i][j] << "    \t";
+void Display() {
+        for (const auto& row : Matrix) {
+            for (const auto& elem : row) {
+                cout << elem << "\t";
+            }
+            cout << endl;
         }
-        cout << endl;
-      }
     }
 };
+    
 
 vector < string > UniqueValues(vector < string > A_String)
 {
@@ -398,7 +367,7 @@ string FrequentValues(vector < string > A_String)
       Max_Index = i;
     }
   }
-  return Unique_Values[Max_Index];
+  return Max_Index != -1 ? Unique_Values[Max_Index] : "";
 }
 
 double ComputeScoreEntropy(vector < string > Scores)
@@ -406,11 +375,11 @@ double ComputeScoreEntropy(vector < string > Scores)
   vector < string > Score_Range = UniqueValues(Scores);
   if(Score_Range.size() == 0)
   {
-    return 0.;
+    return 0.0;
   }
   else
   {
-    double TheEntropy = 0.;
+    double TheEntropy = 0.0;
   	int i, j;
   	int Count[Score_Range.size()] = {0};
 
@@ -483,11 +452,10 @@ double ComputeAttributeEntropyGain(MatrixCls Remain_Matrix, string The_Attribute
   }
 }
 
-double GainRatio(MatrixCls Remain_Matrix, string The_Attribute, string Bisect_Node = "")
-{
-  double Attribute_Entropy = ComputeAttributeEntropy(Remain_Matrix, The_Attribute);
-  double Attribute_Entropy_Gain = ComputeAttributeEntropyGain(Remain_Matrix, The_Attribute, Bisect_Node);
-  return Attribute_Entropy_Gain/Attribute_Entropy;
+double GainRatio(MatrixCls Remain_Matrix, string The_Attribute, string Bisect_Node = "") {
+    double Attribute_Entropy = ComputeAttributeEntropy(Remain_Matrix, The_Attribute);
+    double Attribute_Entropy_Gain = ComputeAttributeEntropyGain(Remain_Matrix, The_Attribute, Bisect_Node);
+    return Attribute_Entropy > 0 ? Attribute_Entropy_Gain / Attribute_Entropy : 0.0; // Prevent division by zero
 }
 
 class TreeCls
@@ -496,88 +464,40 @@ class TreeCls
     string Node;
     string Branch;
     vector < TreeCls * > Child;
-    TreeCls();
+    TreeCls()TreeCls() : Node(""), Branch("") {}
+
     TreeCls * BuildTree(TreeCls * Tree, MatrixCls Remain_Matrix);
     void Display(int Depth);
     string Temp_TestTree(vector < string > Kinds, vector < string > Attributes, vector < string > Value, vector < string > Score_Range);
     vector < string > TestTree(MatrixCls Data_Matrix);
 };
 
-string TreeCls::Temp_TestTree(vector < string > Kinds, vector < string > Attributes, vector < string > Value, vector < string > Score_Range)
-{
-  for(int i = 0; i < Score_Range.size(); i++)
-  {
-    if(this->Node.compare(Score_Range[i]) == 0)
-    {
-      return this->Node;
+string TreeCls::Temp_TestTree(vector<string> Kinds, vector<string> Attributes, vector<string> Value, vector<string> Score_Range) {
+    for (const auto& score : Score_Range) {
+        if (this->Node == score) {
+            return this->Node;
+        }
     }
-  }
 
-  for(int i = 0; i < Attributes.size(); i++)
-  {
-    if(this->Node.compare(Attributes[i]) == 0)
-    {
-      if(Kinds[i].compare("Discrete") == 0)
-      {
-        for(int j = 0; j < this->Child.size(); j++)
-        {
-          if((this->Child[j])->Branch.compare(Value[i]) == 0)
-          {
-            for(int k = 0; k < Score_Range.size(); k++)
-            {
-              if((this->Child[j])->Node.compare(Score_Range[k]) == 0)
-              {
-                return (this->Child[j])->Node;
-              }
+    for (size_t i = 0; i < Attributes.size(); i++) {
+        if (this->Node == Attributes[i]) {
+            if (Kinds[i] == "Discrete") {
+                for (size_t j = 0; j < this->Child.size(); j++) {
+                    if (this->Child[j]->Branch == Value[i]) {
+                        return this->Child[j]->Temp_TestTree(Kinds, Attributes, Value, Score_Range);
+                    }
+                }
+            } else if (Kinds[i] == "Continuous") {
+                string Threshold = this->Child[0]->Branch.substr(2); // Skip "< "
+                if (stod(Value[i]) < stod(Threshold)) {
+                    return this->Child[0]->Temp_TestTree(Kinds, Attributes, Value, Score_Range);
+                } else {
+                    return this->Child[1]->Temp_TestTree(Kinds, Attributes, Value, Score_Range);
+                }
             }
-
-            vector < string > New_Kinds;
-            vector < string > New_Attributes;
-            vector < string > New_Value;
-            for(int l = 0; l < Attributes.size(); l++)
-            {
-              if( l != i)
-              {
-                New_Kinds.push_back(Kinds[l]);
-                New_Attributes.push_back(Attributes[l]);
-                New_Value.push_back(Value[l]);
-              }
-            }
-            return (this->Child[j])->Temp_TestTree(New_Kinds, New_Attributes, New_Value, Score_Range);
-          }
         }
-      }
-
-      else if(Kinds[i].compare("Continuous") == 0)
-      {
-        string Threshold = (this->Child[0])->Branch;
-        Threshold.erase(remove(Threshold.begin(), Threshold.begin()+3, '<'), Threshold.begin()+3);
-        Threshold.erase(remove(Threshold.begin(), Threshold.begin()+3, ' '), Threshold.begin()+3);
-        if(stod(Value[i]) - stod(Threshold) < -1.e-8)
-        {
-          for(int k = 0; k < Score_Range.size(); k++)
-          {
-            if((this->Child[0])->Node.compare(Score_Range[k]) == 0)
-            {
-              return (this->Child[0])->Node;
-            }
-          }
-          return (this->Child[0])->Temp_TestTree(Kinds, Attributes, Value, Score_Range);
-        }
-        else if(stod(Value[i]) - stod(Threshold) > 1.e-8)
-        {
-          for(int k = 0; k < Score_Range.size(); k++)
-          {
-            if((this->Child[1])->Node.compare(Score_Range[k]) == 0)
-            {
-              return (this->Child[1])->Node;
-            }
-          }
-          return (this->Child[1])->Temp_TestTree(Kinds, Attributes, Value, Score_Range);
-        }
-      }
     }
-  }
+    return ""; // Default return if not found
 }
 
 vector < string > TreeCls::TestTree(MatrixCls Data_Matrix)
@@ -607,18 +527,110 @@ vector < string > TreeCls::TestTree(MatrixCls Data_Matrix)
   return Test_Scores;
 }
 
-TreeCls::TreeCls()
-{
-  Node = "";
-  Branch = "";
-}
+
 
 TreeCls * TreeCls::BuildTree(TreeCls * Tree, MatrixCls Remain_Matrix)
 {
-  if(Tree == NULL)
+  if (Tree == nullptr)
   {
     Tree = new TreeCls();
   }
+
+  // Get unique score values from the remaining matrix
+  vector<string> Score_Range = UniqueValues(Remain_Matrix.GetScores());
+  
+  // If there's only one score value left, make it the current node
+  if (Score_Range.size() == 1)
+  {
+    Tree->Node = Score_Range[0];
+    return Tree;
+  }
+
+  // Get the types of attributes in the matrix
+  vector<string> Kinds = Remain_Matrix.GetVarKinds();
+
+  double Max_Gain_Ratio = -1.0;
+  string Best_Attribute;
+  string Best_Bisect_Node;
+  
+  // Search for the best attribute based on gain ratio
+  for (int i = 0; i < Kinds.size(); i++)
+  {
+    string The_Attribute = Remain_Matrix.GetAttributes()[i];
+    double Gain_Ratio_Value;
+    
+    if (Kinds[i] == "Discrete")
+    {
+      Gain_Ratio_Value = GainRatio(Remain_Matrix, The_Attribute);
+    }
+    else if (Kinds[i] == "Continuous")
+    {
+      vector<string> Bisect_Nodes = Remain_Matrix.GetBisectNodes(The_Attribute);
+      for (string Bisect_Node : Bisect_Nodes)
+      {
+        double Temp_Gain_Ratio = GainRatio(Remain_Matrix, The_Attribute, Bisect_Node);
+        if (Temp_Gain_Ratio > Gain_Ratio_Value)
+        {
+          Gain_Ratio_Value = Temp_Gain_Ratio;
+          Best_Bisect_Node = Bisect_Node;
+        }
+      }
+    }
+    
+    if (Gain_Ratio_Value > Max_Gain_Ratio)
+    {
+      Max_Gain_Ratio = Gain_Ratio_Value;
+      Best_Attribute = The_Attribute;
+    }
+  }
+
+  Tree->Node = Best_Attribute;
+
+  if (Kinds[Remain_Matrix.GetAttributeIndex(Best_Attribute)] == "Discrete")
+  {
+    vector<string> Unique_Values = Remain_Matrix.GetUniqueAttributeValues(Best_Attribute);
+    for (string Value : Unique_Values)
+    {
+      TreeCls * Subtree = new TreeCls();
+      Subtree->Branch = Value;
+      MatrixCls Submatrix = Remain_Matrix(Remain_Matrix, Best_Attribute, Value);
+      Tree->Child.push_back(BuildTree(Subtree, Submatrix));
+    }
+  }
+  else if (Kinds[Remain_Matrix.GetAttributeIndex(Best_Attribute)] == "Continuous")
+  {
+    TreeCls * Lower_Subtree = new TreeCls();
+    Lower_Subtree->Branch = "< " + Best_Bisect_Node;
+    MatrixCls Lower_Submatrix = Remain_Matrix(Remain_Matrix, Best_Attribute, "Lower_Values", Best_Bisect_Node);
+    Tree->Child.push_back(BuildTree(Lower_Subtree, Lower_Submatrix));
+
+    TreeCls * Upper_Subtree = new TreeCls();
+    Upper_Subtree->Branch = ">= " + Best_Bisect_Node;
+    MatrixCls Upper_Submatrix = Remain_Matrix(Remain_Matrix, Best_Attribute, "Upper_Values", Best_Bisect_Node);
+    Tree->Child.push_back(BuildTree(Upper_Subtree, Upper_Submatrix));
+  }
+
+  return Tree;
+}
+
+void TreeCls::Display(int Depth)
+{
+  for (int i = 0; i < Depth; i++)
+  {
+    cout << "\t";
+  }
+  cout << Node << endl;
+  for (TreeCls * Child_Tree : Child)
+  {
+    for (int i = 0; i < Depth + 1; i++)
+    {
+      cout << "\t";
+    }
+    cout << "|-- " << Child_Tree->Branch << endl;
+    Child_Tree->Display(Depth + 1);
+  }
+}
+
 
   vector < string > Unique_Scores = UniqueValues(Remain_Matrix.GetScores());
   if(Unique_Scores.size() == 1)
@@ -740,12 +752,36 @@ void DisplayVector(vector < string > The_Vector)
 
 int main()
 {
-  MatrixCls Matrix("Golf.dat");
-  TreeCls * Tree;
-  Tree = Tree->BuildTree(Tree, Matrix);
-  Tree->Display();
-  vector < string > Test_Scores = Tree->TestTree(Matrix);
-  DisplayVector(Test_Scores);
-  vector < string > Test_String = {"a","b","c","d"};
-  DisplayVector(Test_String);
-} 
+    // Load the dataset
+    MatrixCls Matrix("Golf.dat");
+    
+    // Build the decision tree
+    TreeCls * Tree;
+    Tree = Tree->BuildTree(Tree, Matrix);
+    Tree->Display();  // Display the tree
+    
+    // Test the tree with the same dataset (this can be changed to use a separate test set)
+    vector < string > Test_Scores = Tree->TestTree(Matrix);
+    
+    // Get the actual scores (the correct labels) from the matrix
+    vector<string> Actual_Scores = Matrix.GetScores();
+    
+    // Calculate accuracy by comparing predicted scores to actual scores
+    int correct_predictions = 0;
+    int total_predictions = Test_Scores.size();
+    
+    for (int i = 0; i < total_predictions; i++) {
+        if (Test_Scores[i] == Actual_Scores[i]) {
+            correct_predictions++;
+        }
+    }
+    
+    // Calculate and display the accuracy
+    double accuracy = (double) correct_predictions / total_predictions * 100;
+    cout << "Accuracy: " << accuracy << "%" << endl;
+    
+    // Optionally, display the predicted values
+    DisplayVector(Test_Scores);
+    
+    return 0;
+}

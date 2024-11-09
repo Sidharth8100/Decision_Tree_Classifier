@@ -1,0 +1,61 @@
+double CalculateMisclassificationRate(vector<string> scores) {
+    string majorityScore = FrequentValues(scores);
+    int misclassified = 0;
+    for (const string& score : scores) {
+        if (score != majorityScore) misclassified++;
+    }
+    return (double)misclassified / scores.size();
+}
+void PruneTree(TreeCls* node, MatrixCls& matrix) {
+    if (node == nullptr || node->Child.empty()) return;
+
+    // Recursively prune children
+    for (auto& child : node->Child) {
+        PruneTree(child, matrix);
+    }
+
+    // Calculate error if this node becomes a leaf
+    vector<string> nodeScores = matrix.GetScoresForNode(node->Node);  // Retrieve scores for this node
+    double leafError = CalculateMisclassificationRate(nodeScores);
+
+    // Calculate subtree error by averaging child errors
+    double subtreeError = 0.0;
+    for (auto& child : node->Child) {
+        MatrixCls childMatrix = matrix.FilterByBranch(node->Node, child->Branch);
+        subtreeError += CalculateMisclassificationRate(childMatrix.GetScores());
+    }
+    subtreeError /= node->Child.size();
+
+    // If leaf error is better or within threshold, prune by making this node a leaf
+    if (leafError <= subtreeError) {
+        node->Child.clear();  // Remove all children
+        node->Node = FrequentValues(nodeScores);  // Set node to the majority score
+    }
+}
+TreeCls* root = new TreeCls();
+root = root->BuildTree(root, dataMatrix);
+
+// Apply pruning
+root->PruneTree(root, dataMatrix);
+// Get scores for a specific node
+vector<string> MatrixCls::GetScoresForNode(string nodeName) {
+    vector<string> scores;
+    for (int i = 0; i < Matrix.size(); i++) {
+        if (Matrix[i][FindAttrIndex(nodeName)] == nodeName) {
+            scores.push_back(Scores[i]);
+        }
+    }
+    return scores;
+}
+
+// Filter matrix by branch value for subtree calculations
+MatrixCls MatrixCls::FilterByBranch(string attribute, string branchValue) {
+    MatrixCls filteredMatrix;
+    for (int i = 0; i < Matrix.size(); i++) {
+        if (Matrix[i][FindAttrIndex(attribute)] == branchValue) {
+            filteredMatrix.Matrix.push_back(Matrix[i]);
+            filteredMatrix.Scores.push_back(Scores[i]);
+        }
+    }
+    return filteredMatrix;
+}
