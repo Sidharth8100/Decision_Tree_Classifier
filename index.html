@@ -5,25 +5,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Decision Tree Visualizer</title>
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <h1>Decision Tree Visualizer</h1>
-    <div id="upload">
-        <h3>Upload Training Data</h3>
-        <input type="text" id="fileName" placeholder="Enter training file name (CSV)">
-        <button onclick="uploadFile()">Train Tree</button>
-    </div>
+    <div class="container">
+        <h1>Decision Tree Visualizer</h1>
+        
+        <div class="card">
+            <h3>Upload Training Data</h3>
+            <form id="uploadForm" action="/upload" method="POST">
+                <input type="text" id="fileName" name="fileName" placeholder="Enter training file name (CSV)" required>
+                <button type="button" onclick="uploadFile()">Train Tree</button>
+            </form>
+        </div>
 
-    <div id="tree-display">
-        <h3>Decision Tree Structure</h3>
-        <pre id="treeOutput"></pre>
-    </div>
+        <div class="card" id="tree-display">
+            <h3>Decision Tree Structure</h3>
+            <pre id="treeOutput">The decision tree output will be displayed here after training.</pre>
+        </div>
 
-    <div id="predict">
-        <h3>Test Prediction</h3>
-        <input type="text" id="testFileName" placeholder="Enter test file name (CSV)">
-        <button onclick="predict()">Predict</button>
-        <pre id="predictionOutput"></pre>
+        <div class="card">
+            <h3>Test Prediction</h3>
+            <form id="predictForm" action="/predict" method="POST">
+                <input type="text" id="testFileName" name="testFileName" placeholder="Enter test file name (CSV)" required>
+                <button type="button" onclick="predict()">Predict</button>
+            </form>
+            <pre id="predictionOutput">The prediction results will be displayed here after testing.</pre>
+        </div>
     </div>
 
     <script src="script.js"></script>
