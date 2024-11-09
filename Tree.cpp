@@ -135,6 +135,7 @@ int main() {
     printTree(decisionTree, train_file.GetTable()[0]);
 
     // Code to free memory would go here (not shown for brevity)
-
+    int temp ;
+    cin >> temp;
     return 0;
 }
