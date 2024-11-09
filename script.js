@@ -27,3 +27,5 @@ function predict() {
     })
     .catch(error => console.error('Error:', error));
 }
+
+
