@@ -73,7 +73,7 @@ private:
         std::map<int, int> freq;
         for (int label : labels) freq[label]++;
         double ent = 0.0;
-        for (auto [label, count] : freq) {
+        for (auto [labels, count] : freq) {
             double p = (double)count / labels.size();
             ent -= p * std::log2(p);
         }

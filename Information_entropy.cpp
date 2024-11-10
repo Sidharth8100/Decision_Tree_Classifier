@@ -10,11 +10,6 @@ using namespace std;
 // Function to calculate entropy
 // 
 
-#include <iostream>
-#include <vector>
-#include <map>
-#include <string>
-#include <cmath>
 
 using namespace std;
 

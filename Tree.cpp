@@ -128,11 +128,11 @@ int main() {
     
     Input train_file(f_name);           //// OBEJCT of Data file
     int targetIndex = 6;    
-
+    PrintData( train_file.GetTable());
     Node* decisionTree = buildTree(train_file.GetTable(), targetIndex);
 
-    // Print the decision tree
-    printTree(decisionTree, train_file.GetTable()[0]);
+    //Print the decision tree
+     printTree(decisionTree, train_file.GetTable()[0]);
 
     // Code to free memory would go here (not shown for brevity)
     int temp ;
