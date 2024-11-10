@@ -4,25 +4,17 @@
 #include <string>
 #include <cmath>
 #include <iomanip>
+#include "prediction.h"
 
 ///////////////////////
 
 #include"Information_entropy.cpp"
-#include"Input_dtc.cpp"
+#include"Input_DTC.cpp"
 #include"EntropyCal.cpp"
 
 //////////////////////
 using namespace std;
 
-// Structure for a tree node
-struct Node {
-    int attributeIndex; // Index of the attribute for the decision
-    Node* left; // Left child
-    Node* right; // Right child
-    string decision; // Decision at leaf node (Yes/No)
-
-    Node(int index) : attributeIndex(index), left(nullptr), right(nullptr), decision("") {}
-};
 
 // Function to create a leaf node
 Node* createLeafNode(const vector<vector<string>>& data, int targetIndex) {
@@ -123,16 +115,32 @@ void printTree(Node* node, const vector<string>& headers, int level = 0) {
 // Example usage
 int main() {
     string f_name;
-    cout << "Enter Your File Name" << endl;
+    cout << "Enter Your Training File Name: ";
     cin >> f_name;
     
-    Input train_file(f_name);           //// OBEJCT of Data file
+    Input train_file(f_name);           //// Object to load training data
     int targetIndex = 6;    
-    PrintData( train_file.GetTable());
+
+    // Build the decision tree using the training data
     Node* decisionTree = buildTree(train_file.GetTable(), targetIndex);
 
-    //Print the decision tree
-     printTree(decisionTree, train_file.GetTable()[0]);
+    // Print the decision tree
+    printTree(decisionTree, train_file.GetTable()[0]);
+
+    // Load test data for prediction and verification
+    string test_file_name;
+    cout << "Enter Your Test File Name: ";
+    cin >> test_file_name;
+    
+    Input test_file(test_file_name); // Object to load test data
+    
+    // Verify predictions using the test data
+    bool allMatched = verifyPrediction(decisionTree, test_file.GetTable(), targetIndex);
+    if (allMatched) {
+        cout << "All predictions matched the actual values." << endl;
+    } else {
+        cout << "Some predictions did not match the actual values." << endl;
+    }
 
     // Code to free memory would go here (not shown for brevity)
     int temp ;
