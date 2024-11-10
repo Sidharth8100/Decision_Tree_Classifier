@@ -90,4 +90,4 @@ bool verifyPrediction(Node* root, const vector<vector<string>>& table, int targe
     return allMatched;
 }
 
-#endif 
+#endif
