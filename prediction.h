@@ -86,7 +86,8 @@ bool verifyPrediction(Node* root, const vector<vector<string>>& table, int targe
     }
     int size = table.size() ;
     double percent = match /size  ;
-    cout << match <<' '<< size << ' '<< percent << endl ;
+    cout << endl << "Total Matched :" << match <<" out of "<< size << endl ;
+    cout << "percent MAtched : " << (percent *100) << endl ;
     return allMatched;
 }
 

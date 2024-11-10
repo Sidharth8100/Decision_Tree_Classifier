@@ -5,16 +5,15 @@
 #include <cmath>
 #include <iomanip>
 #include "prediction.h"
-
+#include <windows.h>
 ///////////////////////
 
-#include"Information_entropy.cpp"
-#include"Input_DTC.cpp"
-#include"EntropyCal.cpp"
+#include "Information_entropy.cpp"
+#include "Input_DTC.cpp"
+#include "EntropyCal.cpp"
 
 //////////////////////
 using namespace std;
-
 
 // Function to create a leaf node
 Node* createLeafNode(const vector<vector<string>>& data, int targetIndex) {
@@ -97,7 +96,16 @@ Node* buildTree(const vector<vector<string>>& data, int targetIndex) {
 }
 
 // Function to print the decision tree
-void printTree(Node* node, const vector<string>& headers, int level = 0) {
+void printTree(Node* node, int level = 0) {
+      std::vector<std::string> headers = {
+        "buying price",
+        "maintenance cost",
+        "number of doors",
+        "number of persons",
+        "lug_boot",
+        "safety",
+        "decision"
+    };
     if (node == nullptr) return;
     
     // Print the current node
@@ -106,44 +114,115 @@ void printTree(Node* node, const vector<string>& headers, int level = 0) {
     } else {
         cout << setw(level * 4) << "" << "Attribute: " << headers[node->attributeIndex] << endl;
         cout << setw(level * 4) << "" << "Left ->" << endl;
-        printTree(node->left, headers, level + 1);
+        printTree(node->left,  level + 1);
         cout << setw(level * 4) << "" << "Right ->" << endl;
-        printTree(node->right, headers, level + 1);
+        printTree(node->right, level + 1);
     }
 }
 
 // Example usage
 int main() {
+    int choice = 0;  // Initialize the choice variable
+    
     string f_name;
     cout << "Enter Your Training File Name: ";
     cin >> f_name;
+    Input train_file(f_name);  // Object to load training data
+    int targetIndex = 6;  
     
-    Input train_file(f_name);           //// Object to load training data
-    int targetIndex = 6;    
-
     // Build the decision tree using the training data
     Node* decisionTree = buildTree(train_file.GetTable(), targetIndex);
-
-    // Print the decision tree
-    printTree(decisionTree, train_file.GetTable()[0]);
-
-    // Load test data for prediction and verification
-    string test_file_name;
-    cout << "Enter Your Test File Name: ";
-    cin >> test_file_name;
     
-    Input test_file(test_file_name); // Object to load test data
-    
-    // Verify predictions using the test data
-    bool allMatched = verifyPrediction(decisionTree, test_file.GetTable(), targetIndex);
-    if (allMatched) {
-        cout << "All predictions matched the actual values." << endl;
-    } else {
-        cout << "Some predictions did not match the actual values." << endl;
-    }
-
-    // Code to free memory would go here (not shown for brevity)
-    int temp ;
-    cin >> temp;
+    do {
+        // Ask the user to choose an option
+        cout << "Choose an option:\n";
+        cout << "1. Print the decision tree\n";
+        cout << "2. Verify predictions using test data\n";
+        cout << "3. Show training data table\n";
+        cout << "4. Show a specific row of the table\n";
+        cout << "5. Count unique attributes\n";
+        cout << "6. Calculate Information Gain\n";
+        cout << "7. Calculate Entropy\n";
+        cout << "0. Exit\n";
+        cout << "Enter your choice: ";
+        cin >> choice;
+        
+        switch(choice) {
+            case 1:
+                printTree(decisionTree);
+                break;
+            case 2:
+                {
+                    string test_file_name;
+                    cout << "Enter Your Test File Name: ";
+                    cin >> test_file_name;
+                    Input test_file(test_file_name);  // Object to load test data
+                    bool allMatched = verifyPrediction(decisionTree, test_file.GetTable(), targetIndex);
+                    if (allMatched) {
+                        cout << "All predictions matched the actual values." << endl;
+                    } else {
+                        cout << "Some predictions did not match the actual values." << endl;
+                    }
+                }
+                break;
+            case 3:
+                {
+                    vector<vector<string>> table = train_file.GetTable();
+                    for (const auto& row : table) {
+                        for (const auto& col : row) {
+                            cout << col << " ";
+                        }
+                        cout << endl;
+                    }
+                }
+                break;
+            case 4:
+                {
+                    int rowIndex;
+                    cout << "Enter Row Number: ";
+                    cin >> rowIndex;
+                    vector<vector<string>> table = train_file.GetTable();
+                    if (rowIndex < table.size()) {
+                        for (const auto& col : table[rowIndex]) {
+                            cout << col << " ";
+                        }
+                        cout << endl;
+                    } else {
+                        cout << "Invalid row index." << endl;
+                    }
+                }
+                break;
+            case 5:
+                CountUniqueAttributes(train_file.GetTable());
+                break;
+            case 6:
+                {
+                    vector<double> IG = Information_Gain(train_file.GetTable(), targetIndex);
+                    for (auto i = 0; i < IG.size(); i++) {
+                        cout << "Information Gain of column " << i << ": " << IG[i] << endl;
+                    }
+                }
+                break;
+            case 7:
+                {
+                    double EN = CalculateEntropy(train_file.GetTable(), targetIndex);
+                    cout << "Entropy of Root: " << EN << endl;
+                }
+                break;
+            case 0:
+                cout << "Exiting...\n";
+                break;
+            default:
+                cout << "\nINVALID OPTION, CHOOSE AGAIN\n";
+                Sleep(2000);
+        }   
+        
+        // Clear input buffer
+        cout << "Press Enter For Next Query: ";
+        cin.ignore();  // Clear the input buffer
+        cin.get();     // Wait for user input before continuing
+        
+    } while (choice != 0);
+   
     return 0;
 }
