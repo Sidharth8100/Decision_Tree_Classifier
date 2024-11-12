@@ -22,7 +22,7 @@ class Input
     int T_row = 0;
 
 public:
-    Input(string f_name)
+     Input(string f_name)
     {
         ifstream reader(f_name);
         if (reader.is_open())
@@ -42,10 +42,14 @@ public:
             {   
                 table.erase(table.begin() + T_row, table.end());
             }
+             reader.close();
+            
         }
         else
         {
-            cout << "File does not exist ;" << endl;
+            cout << "File does not exist \n exiting... ;" << endl;
+            Sleep(1000);
+            exit(1);
         }
     }
     

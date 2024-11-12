@@ -6,6 +6,8 @@
 #include <iomanip>
 #include "prediction.h"
 #include <windows.h>
+#include<conio.h>
+#include<queue>
 ///////////////////////
 
 #include "Information_entropy.cpp"
@@ -119,38 +121,172 @@ void printTree(Node* node, int level = 0) {
         printTree(node->right, level + 1);
     }
 }
+void printTreeLevelOrder(Node* root) {
+    if (root == nullptr) {
+        cout << "Tree is empty!" << endl;
+        return;
+    }
+
+    // Vector of headers for attributes
+    vector<string> headers = {
+        "buying price",
+        "maintenance cost",
+        "number of doors",
+        "number of persons",
+        "lug_boot",
+        "safety",
+        "decision"
+    };
+
+    // Queue for level order traversal
+    queue<Node*> q;
+    q.push(root);
+
+    // While there are nodes in the queue
+    while (!q.empty()) {
+        // Get the number of nodes at the current level
+        int level_size = q.size();
+        vector<Node*> current_level;
+
+        // Process each node at the current level
+        for (int i = 0; i < level_size; ++i) {
+            Node* currentNode = q.front();
+            q.pop();
+            current_level.push_back(currentNode);
+
+            // Add children to the queue
+            if (currentNode->left) {
+                q.push(currentNode->left);
+            }
+            if (currentNode->right) {
+                q.push(currentNode->right);
+            }
+        }
+
+        // Print nodes for the current level
+        for (size_t i = 0; i < current_level.size(); ++i) {
+            Node* currentNode = current_level[i];
+
+            // Print the node with its appropriate decision or attribute
+            if (currentNode->decision != "") {
+                cout << "[" << currentNode->decision << "]";
+            } else {
+                cout << "[" << headers[currentNode->attributeIndex] << "]";
+            }
+
+            // Print branches if not the last node at this level
+            if (i < current_level.size() - 1) {
+                cout << "    ";
+            }
+        }
+
+        cout << endl;
+
+        // Print branches
+        for (size_t i = 0; i < current_level.size(); ++i) {
+            if (current_level[i]->left || current_level[i]->right) {
+                if (i == 0) {
+                    cout << "    /";
+                } else {
+                    cout << "    \\";
+                }
+            }
+        }
+        cout << endl;
+
+        // Print the next level (children of the current level's nodes)
+        for (size_t i = 0; i < current_level.size(); ++i) {
+            if (current_level[i]->left) {
+                cout << "    ";
+            } else {
+                cout << "    ";
+            }
+            if (current_level[i]->right) {
+                cout << "    ";
+            }
+        }
+
+        // Print a new line for the next iteration
+        cout << endl;
+    }
+}
+void printWithDelay(const string& str, int delay) {
+    for (char ch : str) {
+        cout << ch;  // Print the character
+        Sleep(1);  // Pause for the given delay (in milliseconds)
+    }
+    cout << endl;  // Move to the next line after printing the string
+}
 
 // Example usage
 int main() {
-    int choice = 0;  // Initialize the choice variable
     
+   bool new_file = true;
+    cout << "\n \t\t\t\t\n\nDECISION TREE CLASSIFIER \n";
+    int choice = 0;  // Initialize the choice variable
+
     string f_name;
-    cout << "Enter Your Training File Name: ";
+    cout << "Enter Your Training File Name: \n ( Valid Filename example  : car2.csv or car3.csv or car_evaluation.csv ) \n";
     cin >> f_name;
     Input train_file(f_name);  // Object to load training data
     int targetIndex = 6;  
-    
+
     // Build the decision tree using the training data
     Node* decisionTree = buildTree(train_file.GetTable(), targetIndex);
-    
+
     do {
+        cout << "\n \t\t\t\t DECISION TREE CLASSIFIER \n";
+
         // Ask the user to choose an option
-        cout << "Choose an option:\n";
-        cout << "1. Print the decision tree\n";
-        cout << "2. Verify predictions using test data\n";
-        cout << "3. Show training data table\n";
-        cout << "4. Show a specific row of the table\n";
-        cout << "5. Count unique attributes\n";
-        cout << "6. Calculate Information Gain\n";
-        cout << "7. Calculate Entropy\n";
-        cout << "0. Exit\n";
-        cout << "Enter your choice: ";
+        vector<string> options = {
+            "Choose an option:",
+            "1. Print the decision tree",
+            "2. Verify predictions using test data",
+            "3. Show training data table",
+            "4. Show a specific row of the table",
+            "5. Count unique attributes",
+            "6. Calculate Information Gain",
+            "7. Calculate Entropy",
+            "8. Clear Screen",
+            "9. Change Training File" ,
+            "0. Exit",
+            "Enter your choice: "
+        };
+
+        if (!new_file) {
+            cout << "Enter Your Training File Name: \n ( Valid Filename example  : car2.csv or car3.csv or car_evaluation.csv ) \n";
+            cin >> f_name;
+            train_file = Input(f_name);  // Corrected: Reload the training file object
+            targetIndex = 6;
+            new_file = true;
+        }
+
+        // Build the decision tree using the training data
+        decisionTree = buildTree(train_file.GetTable(), targetIndex);
+
+        // Loop through the vector to print each string character by character with a sleep delay
+        for (size_t i = 0; i < options.size(); ++i) {
+            printWithDelay(options[i], 2);  // Print each string with 100ms delay between characters
+        }
+
         cin >> choice;
-        
+        int ver_hor = 0 ;
         switch(choice) {
             case 1:
-                printTree(decisionTree);
+                
+                cout << "Enter number to Print Tree in Different Format \n 1. Horizontal Format \n 2. Level Order Format \n ";
+                cin >> ver_hor;
+                if(ver_hor == 1)
+                {
+                printTree(decisionTree);cout << endl ;
                 break;
+                }
+                if(ver_hor == 2){
+                printTreeLevelOrder(decisionTree) ;
+                break;
+                 }
+                else{cout << "\nInvalid Number \n" ; break;}
+                
             case 2:
                 {
                     string test_file_name;
@@ -207,20 +343,35 @@ int main() {
                 {
                     double EN = CalculateEntropy(train_file.GetTable(), targetIndex);
                     cout << "Entropy of Root: " << EN << endl;
+                    break;
                 }
-                break;
+            case 8:
+            {
+              system("cls"); 
+              break;
+            }
+            case 9:
+            {
+                  new_file = false;
+                    break;
+            }
             case 0:
                 cout << "Exiting...\n";
+                Sleep(1000);
                 break;
             default:
                 cout << "\nINVALID OPTION, CHOOSE AGAIN\n";
                 Sleep(2000);
+            
         }   
         
         // Clear input buffer
+        if(choice != 0 && choice != 8 && choice != 9){
         cout << "Press Enter For Next Query: ";
         cin.ignore();  // Clear the input buffer
-        cin.get();     // Wait for user input before continuing
+        cin.get();     // Wait for user input before continuing 
+        
+        }
         
     } while (choice != 0);
    
